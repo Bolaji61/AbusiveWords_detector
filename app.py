@@ -1,11 +1,12 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import re
 import nltk
-nltk.download('punkt')
+from nltk import word_tokenize
+from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 nltk.download('stopwords')
-from nltk.stem import WordNetLemmatizer
-from nltk import word_tokenize
+nltk.download('punkt')
+
 
 def GetCleanText(text):
   text = text.lower().split()
@@ -65,27 +66,22 @@ def censor(text):
 
 
 # Initialize the app
-wikifilter = Flask(__name__)
+app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods = ['GET','POST'])
 def home():
     return render_template('index.html')
 
-@app.route('/dectect', methods=['GET'])
+@app.route('/detect', methods=['GET', 'POST'])
 def detect():
-    try:
-        if request.method == 'POST':
-            post = request.json["post"]
-           
-            text = GetCleanText(post)
+    if request.method == 'POST':
+      post = request.json["post"]
+      text = GetCleanText(post)
+      prediction = censor(text)
+      return jsonify(summary = prediction)
 
-            prediction = censor(text)
-            return jsonify(summary = prediction)
-
-if __name__ == "__main__":
-    wikifilter.run(debug=True)
-
-
+if  __name__ == "__main__":
+  app.run(debug=True)
 
 
 
